@@ -118,10 +118,46 @@ minion-passwd   minionbadpasswd1
                 minion-passwd:
                     minionbadpasswd1
 
+NEW FEATURE !!!
+
+External vault secrets can be delivered as pillar using a topfile-like syntax, e.g.
+
+.. code-block:: yaml
+
+    ext_pillar:
+      - vault:
+          base:
+            top:
+              '*':
+                - public/base
+              'db.example.com':
+                - secret/db
+              'app.example.com':
+                - secret/web
+
+Backwards compatible with conf and nesting_key
+
+.. code-block:: yaml
+
+    ext_pillar:
+      - vault:
+          conf: path=secret/salt
+          nesting_key: salt
+          base:
+            '*':
+              - secret/base
+            'db.example.com':
+              - secret/db
+          dev:
+            'db.dev-example.com':
+              - secret/db-dev
+        
 """
 
 
 import logging
+
+from salt.pillar import Pillar
 
 log = logging.getLogger(__name__)
 
@@ -140,10 +176,15 @@ def ext_pillar(
     pillar,  # pylint: disable=W0613
     conf,
     nesting_key=None,
+    *args,
+    **kwargs
 ):
     """
     Get pillar data from Vault for the configuration ``conf``.
     """
+    log.debug(f"satchmo-args: {args}")
+    log.debug(f"satchmo-kwargs: {kwargs}")
+
     comps = conf.split()
 
     paths = [comp for comp in comps if comp.startswith("path=")]

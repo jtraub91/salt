@@ -8,14 +8,20 @@ While salt's current vault integration provide some ability for minions to retri
 
 ## __Current Implementation__
 
-Salt's current vault integration relies on enabling `peer_run` for the `vault.generate_token` runner function for any minion in need of a vault secret. When a minion requests a secret in vault, it first calls the master to generate a token. The master then generates the token with policies specified in its vault configuration and returns it to the requesting minion to use while making the request to vault.
+Salt's current vault integration relies on enabling `peer_run` for the `vault.generate_token` runner function for any minion in need of a vault secret. When a minion requests a secret in vault, it first calls the master to generate a token. The master then generates the token with policies specified in its vault configuration and returns the token to the requesting minion to use while making the request to vault.
 
-This is particularly ciruitous when utilizing vault as external pillar. As it happens, trying to achieve minion-level access to vault fails with a "retrieve until first failure" condition (which may be a bug) that not only prevents external vault pillar from being a viable option, but probably offers an opportunity to re-consider how vault external pillar is integrated. 
+### __Problems With Current Implementation__
+
+Let's suppose we want to configure minion policies to be able to have specific minions 
+
+T to be applied across minions is to template the policy by minion id. . Alternatively, policy templated by grains cannot be ied on as a secure solution since a minion can override its grains, potentially evading the intended security policy.
+
+
+This is particularly ciruitous and unnecessary when utilizing vault as external pillar.
 
 _Caveats_
 
-As it happens, the only way to guarantee specific minion-level access is to template the policy by minion id. Unfortunately, this becomes unwieldly at scale since it requires a policy per minion. Alternatively, policy templated by grains cannot be relied on as a secure solution since a minion can override its grains, potentially evading the intended security policy.
-
+As it happens, 
 _Thoughts_
 
 One thought may be to allow for policy templated by pillar, however, this would still suffer from a similar caveat; pillar can be overrided by a minion with [several functions](https://docs.saltproject.io/en/latest/topics/pillar/#encrypted-pillar-data-on-the-cli).
